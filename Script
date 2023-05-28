@@ -1,0 +1,33 @@
+def leftbankIndex(bankline, upperLimit, lowerLimit):
+    
+    x1 = bankline.total_bounds[0]
+    x2 = bankline.total_bounds[2]
+    upperLowerLimitDict = {
+        'lineid':['upper', 'lower'],
+        'geometry':[LineString([[x1, upperLimit],[x2, upperLimit]]), 
+                    LineString([[x1, lowerLimit],[x2, lowerLimit]])]
+    }
+    upperLowerLimitgdf = gpd.GeoDataFrame(upperLowerLimitDict, geometry='geometry', crs=bankline.crs)
+    
+    spresult = split(bankline73.boundary[0], 
+                 MultiLineString([LineString([[x1, upperLimit],[x2, upperLimit]]), 
+                LineString([[x1, lowerLimit],[x2, lowerLimit]])]))
+    
+    geoms = [i for i in spresult.geoms]
+    
+    
+    splitedGdf = gpd.GeoDataFrame({'ids':range(len(geoms))}, geometry=geoms, crs=bankline.crs)
+    
+    sorted_index = np.argsort(splitedGdf.length).to_numpy()
+    index1 = sorted_index[-1]
+    index2 = sorted_index[-2]
+    cx = splitedGdf.centroid.x.to_numpy()
+    
+    if cx[index1]>cx[index2]:
+        leftbank = splitedGdf[splitedGdf.index == index1]
+        rightbank = splitedGdf[splitedGdf.index == index2]
+        return leftbank, rightbank
+    else:
+        leftbank = splitedGdf[splitedGdf.index == index2]
+        rightbank = splitedGdf[splitedGdf.index == index1]
+        return leftbank, rightbank
